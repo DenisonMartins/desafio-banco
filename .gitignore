@@ -37,4 +37,4 @@ mvnw
 mvnw.cmd
 
 ### Requests ###
-src/main/test/httprequests/
+src/test/httprequests/
