@@ -7,7 +7,6 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.math.BigDecimal;
 import java.util.Set;
 
 import static br.com.michaelmartins.desafiobanco.fixture.SolicitacaoContaFixture.*;
@@ -63,7 +62,7 @@ class SolicitacaoContaTest {
 
     @Test
     void getCpf_Valido() {
-        SolicitacaoConta solicitacao = criarSolicitacao(new BigDecimal("200.0"));
+        SolicitacaoConta solicitacao = criarSolicitacao(200.0);
         Set<ConstraintViolation<SolicitacaoConta>> constraintViolations = validator.validate(solicitacao);
 
         assertThat(constraintViolations).isEmpty();

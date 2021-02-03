@@ -6,7 +6,6 @@ import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
 import br.com.michaelmartins.desafiobanco.fixture.ContaBancariaFixture;
 import br.com.michaelmartins.desafiobanco.repository.ContaBancariaRepository;
 import br.com.michaelmartins.desafiobanco.service.GeradorNumeroConta;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -15,17 +14,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import static br.com.michaelmartins.desafiobanco.fixture.ContaBancariaFixture.contaBancariaSalva;
-import static br.com.michaelmartins.desafiobanco.fixture.ContaBancariaResponseFixture.contaBancariaResponse;
 import static br.com.michaelmartins.desafiobanco.fixture.SolicitacaoContaFixture.solicitacaoComSaldoSuficiente;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class ImportarContaServiceImplTest {
+class ContaBancariaServiceImplTest {
 
-    @InjectMocks private ImportarContaServiceImpl service;
+    @InjectMocks private ContaBancariaServiceImpl service;
     @Mock private ContaBancariaRepository repositoryMock;
     @Mock private GeradorNumeroConta geradorNumeroContaMock;
 
@@ -59,5 +57,17 @@ class ImportarContaServiceImplTest {
         assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(contaBancaria.getId());
         assertThat(resultado.getNumeroConta()).isEqualTo(numeroConta);
+    }
+
+    @Test
+    void depositar() {
+        BDDMockito.when(repositoryMock.getOne(anyLong())).thenReturn(contaBancariaSalva());
+        ContaBancaria contaBancariaAtualizada = ContaBancariaFixture.contaBancariaAtualizada();
+        BDDMockito.when(repositoryMock.save(any())).thenReturn(contaBancariaAtualizada);
+
+        ContaBancariaResponse resultado = service.depositar(1L, "100.0");
+
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getSaldo()).isEqualTo(250.0);
     }
 }

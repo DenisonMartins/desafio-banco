@@ -4,7 +4,6 @@ import org.hibernate.validator.constraints.br.CPF;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
-import java.math.BigDecimal;
 import java.util.Map;
 
 public class SolicitacaoConta {
@@ -16,7 +15,7 @@ public class SolicitacaoConta {
     private String cpf;
 
     @Min(value = 50, message = "Saldo insuficiente para abertura de nova conta.")
-    private BigDecimal saldo;
+    private Double saldo;
 
     public SolicitacaoConta() {
     }
@@ -24,7 +23,7 @@ public class SolicitacaoConta {
     public SolicitacaoConta(Map<String, String> mapSolicitacao) {
         this.nome = mapSolicitacao.get("Nome");
         this.cpf = mapSolicitacao.get("Cpf");
-        this.saldo = new BigDecimal(mapSolicitacao.get("Saldo"));
+        this.saldo = Double.parseDouble(mapSolicitacao.get("Saldo"));
     }
 
     public String getNome() {
@@ -43,11 +42,11 @@ public class SolicitacaoConta {
         this.cpf = cpf;
     }
 
-    public BigDecimal getSaldo() {
+    public Double getSaldo() {
         return saldo;
     }
 
-    public void setSaldo(BigDecimal saldo) {
+    public void setSaldo(Double saldo) {
         this.saldo = saldo;
     }
 

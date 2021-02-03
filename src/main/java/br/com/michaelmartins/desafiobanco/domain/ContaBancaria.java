@@ -5,6 +5,7 @@ import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
 import javax.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Objects;
 
 import static javax.persistence.GenerationType.IDENTITY;
@@ -19,9 +20,14 @@ public class ContaBancaria {
     @Embedded
     private Pessoa pessoa;
     private String numeroConta;
-    private BigDecimal saldo;
+    private Double saldo;
 
     public ContaBancaria() {
+    }
+
+    public ContaBancaria(Map<String, String> mapaConta) {
+        this.numeroConta = mapaConta.get("Numero Conta");
+        this.saldo = Double.parseDouble(mapaConta.get("Saldo"));
     }
 
     public ContaBancaria(SolicitacaoConta solicitacaoConta) {
@@ -53,12 +59,16 @@ public class ContaBancaria {
         this.numeroConta = numeroConta;
     }
 
-    public BigDecimal getSaldo() {
+    public Double getSaldo() {
         return saldo;
     }
 
-    public void setSaldo(BigDecimal saldo) {
+    public void setSaldo(Double saldo) {
         this.saldo = saldo;
+    }
+
+    public void adicionarValorAoSaldo(String valor) {
+        saldo += Double.parseDouble(valor);
     }
 
     @Override

@@ -2,8 +2,6 @@ package br.com.michaelmartins.desafiobanco.fixture;
 
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
 
-import java.math.BigDecimal;
-
 public class SolicitacaoContaFixture {
 
     private static SolicitacaoConta umaInstanciaSolicitacaoContaComNomePessoa() {
@@ -13,14 +11,14 @@ public class SolicitacaoContaFixture {
     }
 
     public static SolicitacaoConta solicitacaoComSaldoInsuficiente() {
-        return criarSolicitacao(BigDecimal.TEN);
+        return criarSolicitacao(10.0);
     }
 
     public static SolicitacaoConta solicitacaoComSaldoSuficiente() {
-        return criarSolicitacao(new BigDecimal("100.0"));
+        return criarSolicitacao(100.0);
     }
 
-    public static SolicitacaoConta criarSolicitacao(BigDecimal saldo) {
+    public static SolicitacaoConta criarSolicitacao(Double saldo) {
         SolicitacaoConta solicitacaoConta = umaInstanciaSolicitacaoContaComNomePessoa();
         solicitacaoConta.setCpf("58951449009");
         solicitacaoConta.setSaldo(saldo);
@@ -29,14 +27,14 @@ public class SolicitacaoContaFixture {
 
     public static SolicitacaoConta solicitacaoComSaldoCpfVazio() {
         SolicitacaoConta solicitacaoConta = umaInstanciaSolicitacaoContaComNomePessoa();
-        solicitacaoConta.setSaldo(new BigDecimal("100.0"));
+        solicitacaoConta.setSaldo(100.0);
         return solicitacaoConta;
     }
 
     public static SolicitacaoConta solicitacaoComSaldoCpfInvalido() {
         SolicitacaoConta solicitacaoConta = umaInstanciaSolicitacaoContaComNomePessoa();
         solicitacaoConta.setCpf("11111111111");
-        solicitacaoConta.setSaldo(new BigDecimal("100.0"));
+        solicitacaoConta.setSaldo(100.0);
         return solicitacaoConta;
     }
 }
