@@ -7,6 +7,7 @@ public class ContaBancariaResponse {
     public static final String CONTA_CADASTRADA_COM_SUCESSO = "Conta cadastrada com sucesso!";
     public static final String DEPOSITO_REALIZADO_COM_SUCESSO = "Depósito realizado com sucesso!";
     public static final String SAQUE_REALIZADO_COM_SUCESSO = "Saque realizado com sucesso!";
+    public static final String TRANSFERENCIA_REALIZADA_COM_SUCESSO = "Transferência realizada com sucesso!";
 
     private Long id;
     private String numeroConta;

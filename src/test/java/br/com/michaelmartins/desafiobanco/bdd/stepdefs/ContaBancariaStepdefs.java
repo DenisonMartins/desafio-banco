@@ -2,6 +2,7 @@ package br.com.michaelmartins.desafiobanco.bdd.stepdefs;
 
 import br.com.michaelmartins.desafiobanco.domain.ContaBancaria;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
+import br.com.michaelmartins.desafiobanco.dto.SolicitacaoTransferencia;
 import br.com.michaelmartins.desafiobanco.repository.ContaBancariaRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.datatable.DataTable;
@@ -19,9 +20,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class ImportarContaStepdefs extends StepDefs implements Pt {
+public class ContaBancariaStepdefs extends StepDefs implements Pt {
 
     public static final String URL_DEFAULT_CONTAS_BANCARIAS = "/contas-bancarias";
+
     private String valorSaque;
     private String saldoADepositar;
 
@@ -29,12 +31,13 @@ public class ImportarContaStepdefs extends StepDefs implements Pt {
         contaBancariaRepository.deleteAllInBatch();
     }
 
-    public ImportarContaStepdefs(MockMvc mockMvc, ContaBancariaRepository contaBancariaRepository) {
+    public ContaBancariaStepdefs(MockMvc mockMvc, ContaBancariaRepository contaBancariaRepository) {
 
         setup(contaBancariaRepository);
 
         List<SolicitacaoConta> solicitacoes = new ArrayList<>();
         List<ContaBancaria> contas = new ArrayList<>();
+        List<SolicitacaoTransferencia> solicitacoesTransferencias = new ArrayList<>();
 
         Dado("que seja solicitada a criação de uma nova conta com os seguintes valores", (DataTable dataTable) ->
                 dataTable.asMaps().stream().map(SolicitacaoConta::new).forEach(solicitacoes::add));
@@ -72,9 +75,8 @@ public class ImportarContaStepdefs extends StepDefs implements Pt {
                                             .content(saldoADepositar)));
 
         E("o saldo da conta {string} deverá ser de {string}", (String numeroConta, String saldoDaConta) -> {
-            Optional<ContaBancaria> contaBancaria = contaBancariaRepository.findByNumeroConta(numeroConta);
-            assertThat(contaBancaria).isPresent();
-            assertThat(contaBancaria.get().getSaldo()).isEqualTo(Double.parseDouble(saldoDaConta));
+            ContaBancaria contaBancaria = contaBancariaRepository.findByNumeroConta(numeroConta);
+            assertThat(contaBancaria.getSaldo()).isEqualTo(Double.parseDouble(saldoDaConta));
         });
 
         Dado("que seja solicitado um saque de {string}", (String valorDoSaque) ->
@@ -83,6 +85,15 @@ public class ImportarContaStepdefs extends StepDefs implements Pt {
         Quando("for executada a operação de saque", () -> {
             resultado = mockMvc.perform(put(URL_DEFAULT_CONTAS_BANCARIAS + "/saque/{id}", contas.get(0).getId())
                                         .contentType(APPLICATION_JSON).content(valorSaque));
+        });
+
+        Dado("que seja solicitada um transferência com as seguintes informações", (DataTable dataTable) ->
+            dataTable.asMaps().stream().map(SolicitacaoTransferencia::new).forEach(solicitacoesTransferencias::add));
+
+        Quando("for executada a operação de transferência", () -> {
+            String json = new ObjectMapper().writeValueAsString(solicitacoesTransferencias.get(0));
+            resultado = mockMvc.perform(post(URL_DEFAULT_CONTAS_BANCARIAS + "/transferencia")
+                                        .contentType(APPLICATION_JSON).content(json));
         });
     }
 }

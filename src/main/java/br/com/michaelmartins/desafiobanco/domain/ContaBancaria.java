@@ -18,7 +18,7 @@ public class ContaBancaria {
     @Embedded
     private Pessoa pessoa;
     private String numeroConta;
-    private Double saldo;
+    private Double saldo = 0d;
 
     public ContaBancaria() {
     }
@@ -65,12 +65,16 @@ public class ContaBancaria {
         this.saldo = saldo;
     }
 
-    public void adicionarValorAoSaldo(String valorDeposito) {
-        saldo += Double.parseDouble(valorDeposito);
+    public void adicionarValorAoSaldo(Double valorDeposito) {
+        saldo += valorDeposito;
     }
 
-    public void retirarValorDoSaldo(String valorDeSaque) {
-        saldo -= Double.parseDouble(valorDeSaque);
+    public void retirarValorDoSaldo(Double valorDeSaque) {
+        saldo -= valorDeSaque;
+    }
+
+    public boolean temValorDisponivelParaTransferencia(Double valorTransferencia) {
+        return saldo > valorTransferencia;
     }
 
     @Override

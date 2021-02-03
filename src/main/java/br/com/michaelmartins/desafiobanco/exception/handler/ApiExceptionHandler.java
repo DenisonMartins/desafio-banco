@@ -2,6 +2,7 @@ package br.com.michaelmartins.desafiobanco.exception.handler;
 
 import br.com.michaelmartins.desafiobanco.exception.ApiExceptionDetails;
 import br.com.michaelmartins.desafiobanco.exception.LimiteMaximoTransferenciaException;
+import br.com.michaelmartins.desafiobanco.exception.SaldoIndisponivelException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -40,6 +41,16 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
             LimiteMaximoTransferenciaException exception) {
         ApiExceptionDetails error = ApiExceptionDetails.ApiExceptionDetailsBuilder.newBuilder()
                 .title("Limite não permitido")
+                .description(exception.getMessage())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .build();
+        return ResponseEntity.badRequest().body(error);
+    }
+
+    @ExceptionHandler(SaldoIndisponivelException.class)
+    public ResponseEntity<ApiExceptionDetails> handleSaldoIndisponivelException(SaldoIndisponivelException exception) {
+        ApiExceptionDetails error = ApiExceptionDetails.ApiExceptionDetailsBuilder.newBuilder()
+                .title("Saldo Indisponível")
                 .description(exception.getMessage())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .build();
