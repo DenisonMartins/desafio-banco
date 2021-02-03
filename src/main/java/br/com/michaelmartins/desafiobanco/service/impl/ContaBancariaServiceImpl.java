@@ -3,6 +3,7 @@ package br.com.michaelmartins.desafiobanco.service.impl;
 import br.com.michaelmartins.desafiobanco.domain.ContaBancaria;
 import br.com.michaelmartins.desafiobanco.dto.ContaBancariaResponse;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
+import br.com.michaelmartins.desafiobanco.exception.LimiteMaximoTransferenciaException;
 import br.com.michaelmartins.desafiobanco.repository.ContaBancariaRepository;
 import br.com.michaelmartins.desafiobanco.service.ContaBancariaService;
 import br.com.michaelmartins.desafiobanco.service.GeradorNumeroConta;
@@ -13,6 +14,8 @@ import static br.com.michaelmartins.desafiobanco.dto.ContaBancariaResponse.DEPOS
 
 @Service
 public class ContaBancariaServiceImpl implements ContaBancariaService {
+
+    public static final int LIMITE_MAXIMO_TRANSFERENCIA = 500;
 
     private final ContaBancariaRepository repository;
     private final GeradorNumeroConta gerador;
@@ -31,15 +34,38 @@ public class ContaBancariaServiceImpl implements ContaBancariaService {
     }
 
     @Override
-    public ContaBancariaResponse depositar(Long id, String valor) {
-        ContaBancaria contaRecuperada = repository.getOne(id);
-        contaRecuperada.adicionarValorAoSaldo(valor);
+    public ContaBancariaResponse depositar(Long id, String valorDeposito) {
+        ContaBancaria contaRecuperada = recuperaContaBancaria(id);
+        contaRecuperada.adicionarValorAoSaldo(valorDeposito);
 
         return getContaBancariaResponse(contaRecuperada, DEPOSITO_REALIZADO_COM_SUCESSO);
     }
 
+    private ContaBancaria recuperaContaBancaria(Long id) {
+        return repository.getOne(id);
+    }
+
+    @Override
+    public ContaBancariaResponse sacar(Long id, String valorDeSaque) {
+        verificaValorDeSaqueDentroDoLimiteDeTransferencia(valorDeSaque);
+        ContaBancaria contaBancaria = recuperaContaBancaria(id);
+        contaBancaria.retirarValorDoSaldo(valorDeSaque);
+        return getContaBancariaResponse(contaBancaria, ContaBancariaResponse.SAQUE_REALIZADO_COM_SUCESSO);
+    }
+
+    private void verificaValorDeSaqueDentroDoLimiteDeTransferencia(String valorDeSaque) {
+        if (isValorMaiorQueLimite(valorDeSaque)) {
+            throw new LimiteMaximoTransferenciaException("Operação de transferência tem um limite máximo de 500 por operação.");
+        }
+    }
+
+    private boolean isValorMaiorQueLimite(String valorDeSaque) {
+        return Double.parseDouble(valorDeSaque) > LIMITE_MAXIMO_TRANSFERENCIA;
+    }
+
     private ContaBancariaResponse getContaBancariaResponse(ContaBancaria contaBancaria, String mensagem) {
-        ContaBancariaResponse contaBancariaResponse = new ContaBancariaResponse(salvar(contaBancaria));
+        ContaBancaria contaBancariaSalva = salvar(contaBancaria);
+        ContaBancariaResponse contaBancariaResponse = new ContaBancariaResponse(contaBancariaSalva);
         contaBancariaResponse.setMessage(mensagem);
         return contaBancariaResponse;
     }

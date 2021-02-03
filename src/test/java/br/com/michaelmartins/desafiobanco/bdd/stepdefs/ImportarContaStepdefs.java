@@ -10,7 +10,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -19,9 +21,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class ImportarContaStepdefs extends StepDefs implements Pt {
 
+    public static final String URL_DEFAULT_CONTAS_BANCARIAS = "/contas-bancarias";
+    private String valorSaque;
     private String saldoADepositar;
 
+    private void setup(ContaBancariaRepository contaBancariaRepository) {
+        contaBancariaRepository.deleteAllInBatch();
+    }
+
     public ImportarContaStepdefs(MockMvc mockMvc, ContaBancariaRepository contaBancariaRepository) {
+
+        setup(contaBancariaRepository);
 
         List<SolicitacaoConta> solicitacoes = new ArrayList<>();
         List<ContaBancaria> contas = new ArrayList<>();
@@ -31,7 +41,7 @@ public class ImportarContaStepdefs extends StepDefs implements Pt {
 
         Quando("for enviada a solicitação de criação de nova conta", () -> {
             String json = new ObjectMapper().writeValueAsString(solicitacoes.get(0));
-            resultado = mockMvc.perform(post("/contas-bancarias/criar")
+            resultado = mockMvc.perform(post(URL_DEFAULT_CONTAS_BANCARIAS + "/criar")
                                                     .contentType(APPLICATION_JSON)
                                                     .content(json));
         });
@@ -52,15 +62,27 @@ public class ImportarContaStepdefs extends StepDefs implements Pt {
                         .map(ContaBancaria::new)
                         .forEach(contaBancaria -> contas.add(contaBancariaRepository.save(contaBancaria))));
 
-        E("que seja solicitado um depósito de {string}", (String valorSaldo) -> saldoADepositar = valorSaldo);
+        E("que seja solicitado um depósito de {string}", (String valorSaldo) ->
+                this.saldoADepositar = valorSaldo);
 
         Quando("for executada a operação de depósito", () ->
-                resultado = mockMvc.perform(put("/contas-bancarias/depositar/{id}", contas.get(0).getId())
-                        .contentType(APPLICATION_JSON)
-                        .content(saldoADepositar)));
+                resultado = mockMvc.perform(put(URL_DEFAULT_CONTAS_BANCARIAS + "/depositar/{id}",
+                                                contas.get(0).getId())
+                                            .contentType(APPLICATION_JSON)
+                                            .content(saldoADepositar)));
 
-        E("o saldo da conta {string} deverá ser de {string}", (String numeroConta, String saldoDaConta) ->
-                resultado.andExpect(jsonPath(".numeroConta").value(numeroConta))
-                         .andExpect(jsonPath(".saldo").value(Double.parseDouble(saldoDaConta))));
+        E("o saldo da conta {string} deverá ser de {string}", (String numeroConta, String saldoDaConta) -> {
+            Optional<ContaBancaria> contaBancaria = contaBancariaRepository.findByNumeroConta(numeroConta);
+            assertThat(contaBancaria).isPresent();
+            assertThat(contaBancaria.get().getSaldo()).isEqualTo(Double.parseDouble(saldoDaConta));
+        });
+
+        Dado("que seja solicitado um saque de {string}", (String valorDoSaque) ->
+                this.valorSaque = valorDoSaque);
+
+        Quando("for executada a operação de saque", () -> {
+            resultado = mockMvc.perform(put(URL_DEFAULT_CONTAS_BANCARIAS + "/saque/{id}", contas.get(0).getId())
+                                        .contentType(APPLICATION_JSON).content(valorSaque));
+        });
     }
 }

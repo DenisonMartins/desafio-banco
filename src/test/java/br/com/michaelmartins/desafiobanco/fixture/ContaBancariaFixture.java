@@ -14,12 +14,21 @@ public class ContaBancariaFixture {
         return contaBancaria;
     }
 
-    public static ContaBancaria contaBancariaAtualizada() {
+    public static ContaBancaria contaBancariaAtualizadaComDeposito() {
         ContaBancaria contaBancaria = new ContaBancaria();
         contaBancaria.setId(1L);
         contaBancaria.setPessoa(new Pessoa("José", "12345678912"));
         contaBancaria.setNumeroConta("123");
         contaBancaria.setSaldo(250.0);
+        return contaBancaria;
+    }
+
+    public static ContaBancaria contaBancariaAtualizadaComSaque() {
+        ContaBancaria contaBancaria = new ContaBancaria();
+        contaBancaria.setId(1L);
+        contaBancaria.setPessoa(new Pessoa("José", "12345678912"));
+        contaBancaria.setNumeroConta("123");
+        contaBancaria.setSaldo(100.0);
         return contaBancaria;
     }
 }

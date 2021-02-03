@@ -37,4 +37,11 @@ public class ContaBancariaResource {
         ContaBancariaResponse contaBancaria = contaBancariaService.depositar(id, valor);
         return ResponseEntity.ok(contaBancaria);
     }
+
+    @PutMapping(path = "/saque/{id}")
+    public ResponseEntity<ContaBancariaResponse> sacar(@PathVariable Long id, @RequestBody String valor) {
+        log.info("Realização de saque no valor: {}", valor);
+        ContaBancariaResponse contaBancaria = contaBancariaService.sacar(id, valor);
+        return ResponseEntity.ok(contaBancaria);
+    }
 }

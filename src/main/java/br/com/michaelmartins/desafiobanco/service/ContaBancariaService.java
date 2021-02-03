@@ -8,5 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 public interface ContaBancariaService {
     ContaBancariaResponse importar(SolicitacaoConta solicitacaoConta);
 
-    ContaBancariaResponse depositar(Long id, String valor);
+    ContaBancariaResponse depositar(Long id, String valorDeposito);
+
+    ContaBancariaResponse sacar(Long id, String valorDeSaque);
 }

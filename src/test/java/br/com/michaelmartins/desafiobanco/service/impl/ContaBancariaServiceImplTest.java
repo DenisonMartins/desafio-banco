@@ -3,7 +3,7 @@ package br.com.michaelmartins.desafiobanco.service.impl;
 import br.com.michaelmartins.desafiobanco.domain.ContaBancaria;
 import br.com.michaelmartins.desafiobanco.dto.ContaBancariaResponse;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
-import br.com.michaelmartins.desafiobanco.fixture.ContaBancariaFixture;
+import br.com.michaelmartins.desafiobanco.exception.LimiteMaximoTransferenciaException;
 import br.com.michaelmartins.desafiobanco.repository.ContaBancariaRepository;
 import br.com.michaelmartins.desafiobanco.service.GeradorNumeroConta;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,9 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import static br.com.michaelmartins.desafiobanco.fixture.ContaBancariaFixture.contaBancariaSalva;
+import static br.com.michaelmartins.desafiobanco.fixture.ContaBancariaFixture.*;
 import static br.com.michaelmartins.desafiobanco.fixture.SolicitacaoContaFixture.solicitacaoComSaldoSuficiente;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.verify;
@@ -33,7 +34,9 @@ class ContaBancariaServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         contaBancaria = contaBancariaSalva();
+
         BDDMockito.when(repositoryMock.save(any())).thenReturn(contaBancaria);
+        BDDMockito.when(repositoryMock.getOne(anyLong())).thenReturn(contaBancariaSalva());
     }
 
     @Test
@@ -61,13 +64,34 @@ class ContaBancariaServiceImplTest {
 
     @Test
     void depositar() {
-        BDDMockito.when(repositoryMock.getOne(anyLong())).thenReturn(contaBancariaSalva());
-        ContaBancaria contaBancariaAtualizada = ContaBancariaFixture.contaBancariaAtualizada();
+
+        ContaBancaria contaBancariaAtualizada = contaBancariaAtualizadaComDeposito();
         BDDMockito.when(repositoryMock.save(any())).thenReturn(contaBancariaAtualizada);
 
         ContaBancariaResponse resultado = service.depositar(1L, "100.0");
 
+        assertationsContaBancaria(resultado, 250.0);
+    }
+
+    @Test
+    void sacar_ComValorDeSaqueMaiorQueLimite_DeveriaLancarExcecao() {
+        assertThrows(LimiteMaximoTransferenciaException.class, () -> service.sacar(1L, "501"));
+    }
+
+    @Test
+    void sacar_ComValorDentroDoLimite_Sucesso() {
+        String valorSaque = "50";
+
+        ContaBancaria contaBancariaAtualizada = contaBancariaAtualizadaComSaque();
+        BDDMockito.when(repositoryMock.save(any())).thenReturn(contaBancariaAtualizada);
+
+        ContaBancariaResponse contaBancariaResponse = service.sacar(1L, valorSaque);
+
+        assertationsContaBancaria(contaBancariaResponse, 100.0);
+    }
+
+    private void assertationsContaBancaria(ContaBancariaResponse resultado, Double valorSaldo) {
         assertThat(resultado).isNotNull();
-        assertThat(resultado.getSaldo()).isEqualTo(250.0);
+        assertThat(resultado.getSaldo()).isEqualTo(valorSaldo);
     }
 }

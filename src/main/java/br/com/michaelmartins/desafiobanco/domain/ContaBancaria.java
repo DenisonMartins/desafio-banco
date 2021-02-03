@@ -3,8 +3,6 @@ package br.com.michaelmartins.desafiobanco.domain;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
 
 import javax.persistence.*;
-
-import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
 
@@ -67,8 +65,12 @@ public class ContaBancaria {
         this.saldo = saldo;
     }
 
-    public void adicionarValorAoSaldo(String valor) {
-        saldo += Double.parseDouble(valor);
+    public void adicionarValorAoSaldo(String valorDeposito) {
+        saldo += Double.parseDouble(valorDeposito);
+    }
+
+    public void retirarValorDoSaldo(String valorDeSaque) {
+        saldo -= Double.parseDouble(valorDeSaque);
     }
 
     @Override

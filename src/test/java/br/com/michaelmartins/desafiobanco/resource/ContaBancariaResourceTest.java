@@ -2,8 +2,8 @@ package br.com.michaelmartins.desafiobanco.resource;
 
 import br.com.michaelmartins.desafiobanco.dto.ContaBancariaResponse;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
+import br.com.michaelmartins.desafiobanco.exception.LimiteMaximoTransferenciaException;
 import br.com.michaelmartins.desafiobanco.exception.SaldoAberturaContaInsuficienteException;
-import br.com.michaelmartins.desafiobanco.fixture.ContaBancariaResponseFixture;
 import br.com.michaelmartins.desafiobanco.service.ContaBancariaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +14,6 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.math.BigDecimal;
 
 import static br.com.michaelmartins.desafiobanco.fixture.ContaBancariaResponseFixture.contaBancariaResponse;
 import static br.com.michaelmartins.desafiobanco.fixture.SolicitacaoContaFixture.solicitacaoComSaldoInsuficiente;
@@ -68,8 +66,32 @@ class ContaBancariaResourceTest {
 
         ContaBancariaResponse contaBancariaResponse = resource.depositar(1L, "125.00").getBody();
 
+        assertationsContaBancaria(contaBancariaResponse);
+    }
+
+    @Test
+    void sacar_ComValorDeSaqueMaiorQueLimite_DeveriaLancarExcecao() {
+        String valorSaque = "501.0";
+        BDDMockito.when(contaBancariaServiceMock.sacar(anyLong(), eq(valorSaque)))
+                .thenThrow(LimiteMaximoTransferenciaException.class);
+
+        assertThrows(LimiteMaximoTransferenciaException.class, () -> resource.sacar(1L, valorSaque));
+    }
+
+    @Test
+    void sacar_ComValorDentroDoLimite_Sucesso() {
+        String valorSaque = "300";
+        BDDMockito.when(contaBancariaServiceMock.sacar(anyLong(), eq(valorSaque)))
+                .thenReturn(contaBancariaResponse());
+
+        ContaBancariaResponse contaBancariaResponse = resource.sacar(1L, valorSaque).getBody();
+
+        assertationsContaBancaria(contaBancariaResponse);
+    }
+
+    private void assertationsContaBancaria(ContaBancariaResponse contaBancariaResponse) {
         assertThat(contaBancariaResponse)
                 .extracting(ContaBancariaResponse::getSaldo)
-                .isEqualTo(new BigDecimal("1500"));
+                .isNotNull();
     }
 }

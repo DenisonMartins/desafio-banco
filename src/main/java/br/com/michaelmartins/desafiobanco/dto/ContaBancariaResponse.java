@@ -2,12 +2,11 @@ package br.com.michaelmartins.desafiobanco.dto;
 
 import br.com.michaelmartins.desafiobanco.domain.ContaBancaria;
 
-import java.math.BigDecimal;
-
 public class ContaBancariaResponse {
 
     public static final String CONTA_CADASTRADA_COM_SUCESSO = "Conta cadastrada com sucesso!";
     public static final String DEPOSITO_REALIZADO_COM_SUCESSO = "Depósito realizado com sucesso!";
+    public static final String SAQUE_REALIZADO_COM_SUCESSO = "Saque realizado com sucesso!";
 
     private Long id;
     private String numeroConta;
