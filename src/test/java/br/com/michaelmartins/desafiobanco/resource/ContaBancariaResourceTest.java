@@ -1,6 +1,6 @@
 package br.com.michaelmartins.desafiobanco.resource;
 
-import br.com.michaelmartins.desafiobanco.dto.ContaBancariaResponse;
+import br.com.michaelmartins.desafiobanco.dto.ContaBancariaDTO;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoTransferencia;
 import br.com.michaelmartins.desafiobanco.exception.LimiteMaximoTransferenciaException;
@@ -13,6 +13,7 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -53,44 +54,39 @@ class ContaBancariaResourceTest {
 
         SolicitacaoConta solicitacaoAberturaConta = solicitacaoComSaldoSuficiente();
 
-        ContaBancariaResponse contaBancaria = contaBancariaResponse();
+        ContaBancariaDTO contaBancaria = contaBancariaResponse();
         BDDMockito.when(contaBancariaServiceMock.importar(eq(solicitacaoAberturaConta)))
                 .thenReturn(contaBancaria);
 
-        ContaBancariaResponse resultado = resource.importar(solicitacaoAberturaConta).getBody();
+        ResponseEntity<ContaBancariaDTO> resultado = resource.importar(solicitacaoAberturaConta);
 
-        assertThat(resultado)
-                .extracting(ContaBancariaResponse::getId)
-                .isEqualTo(contaBancaria.getId());
+        BDDMockito.verify(contaBancariaServiceMock).importar(eq(solicitacaoAberturaConta));
+        assertThat(resultado).isNotNull();
     }
 
     @Test
-    void depositar() {
-        BDDMockito.when(contaBancariaServiceMock.depositar(anyLong(), anyDouble())).thenReturn(contaBancariaResponse());
+    void depositar_DeveriaRealizarODeposito() {
+        resource.depositar(1L, Double.parseDouble("125.00"));
 
-        ContaBancariaResponse contaBancariaResponse = resource.depositar(1L, Double.parseDouble("125.00")).getBody();
-
-        assertationsContaBancaria(contaBancariaResponse);
+        BDDMockito.verify(contaBancariaServiceMock).depositar(anyLong(), anyDouble());
     }
 
     @Test
     void sacar_ComValorDeSaqueMaiorQueLimite_DeveriaLancarExcecao() {
-        Double valorSaque = Double.parseDouble("501");
-        BDDMockito.when(contaBancariaServiceMock.sacar(anyLong(), eq(valorSaque)))
+        BDDMockito.when(contaBancariaServiceMock.sacar(anyLong(), anyDouble()))
                 .thenThrow(LimiteMaximoTransferenciaException.class);
 
-        assertThrows(LimiteMaximoTransferenciaException.class, () -> resource.sacar(1L, valorSaque));
+        assertThrows(LimiteMaximoTransferenciaException.class, () -> resource.sacar(1L, 501.0));
     }
 
     @Test
     void sacar_ComValorDentroDoLimite_Sucesso() {
-        Double valorSaque = Double.parseDouble("300");
-        BDDMockito.when(contaBancariaServiceMock.sacar(anyLong(), eq(valorSaque)))
+        BDDMockito.when(contaBancariaServiceMock.sacar(anyLong(), anyDouble()))
                 .thenReturn(contaBancariaResponse());
 
-        ContaBancariaResponse contaBancariaResponse = resource.sacar(1L, valorSaque).getBody();
+        ResponseEntity<ContaBancariaDTO> resultado = resource.sacar(1L, 300.0);
 
-        assertationsContaBancaria(contaBancariaResponse);
+        assertThat(resultado).isNotNull();
     }
 
     @Test
@@ -115,17 +111,11 @@ class ContaBancariaResourceTest {
     void transferir_SaldoAdequadoDoSolicitante_Sucesso() {
         SolicitacaoTransferencia solicitacaoTransferencia = solicitacaoDeTransferenciaComValorSuperiorDoSaldoDaContaSolicitante();
 
-        ContaBancariaResponse contaBancariaResponse = contaBancariaResponse();
-        BDDMockito.when(contaBancariaServiceMock.transferir(eq(solicitacaoTransferencia))).thenReturn(contaBancariaResponse);
+        ContaBancariaDTO contaBancariaDTO = contaBancariaResponse();
+        BDDMockito.when(contaBancariaServiceMock.transferir(eq(solicitacaoTransferencia))).thenReturn(contaBancariaDTO);
 
-        ContaBancariaResponse resultado = resource.transferir(solicitacaoTransferencia).getBody();
+        ResponseEntity<ContaBancariaDTO> resultado = resource.transferir(solicitacaoTransferencia);
 
-        assertationsContaBancaria(resultado);
-    }
-
-    private void assertationsContaBancaria(ContaBancariaResponse contaBancariaResponse) {
-        assertThat(contaBancariaResponse)
-                .extracting(ContaBancariaResponse::getSaldo)
-                .isNotNull();
+        assertThat(resultado).isNotNull();
     }
 }

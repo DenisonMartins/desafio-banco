@@ -1,7 +1,7 @@
 package br.com.michaelmartins.desafiobanco.service.impl;
 
 import br.com.michaelmartins.desafiobanco.domain.ContaBancaria;
-import br.com.michaelmartins.desafiobanco.dto.ContaBancariaResponse;
+import br.com.michaelmartins.desafiobanco.dto.ContaBancariaDTO;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoConta;
 import br.com.michaelmartins.desafiobanco.dto.SolicitacaoTransferencia;
 import br.com.michaelmartins.desafiobanco.exception.LimiteMaximoTransferenciaException;
@@ -43,7 +43,7 @@ class ContaBancariaServiceImplTest {
     }
 
     @Test
-    void importar_ChamadaAOutroComponente_VerificaQueFoiChamado() {
+    void importar_DeveriaGerarUmNumeroDeConta() {
         SolicitacaoConta solicitacaoConta = solicitacaoComSaldoSuficiente();
 
         service.importar(solicitacaoConta);
@@ -58,7 +58,7 @@ class ContaBancariaServiceImplTest {
         String numeroConta = "123";
         when(geradorNumeroContaMock.gerar()).thenReturn(numeroConta);
 
-        ContaBancariaResponse resultado = service.importar(solicitacaoConta);
+        ContaBancariaDTO resultado = service.importar(solicitacaoConta);
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(contaBancaria.getId());
@@ -66,12 +66,12 @@ class ContaBancariaServiceImplTest {
     }
 
     @Test
-    void depositar() {
+    void depositar_deveriaSomarOvalorSolicitadoComOSaldoDaConta() {
 
         ContaBancaria contaBancariaAtualizada = contaBancariaAtualizadaComDeposito();
         BDDMockito.when(repositoryMock.save(any())).thenReturn(contaBancariaAtualizada);
 
-        ContaBancariaResponse resultado = service.depositar(1L, Double.parseDouble("100.0"));
+        ContaBancariaDTO resultado = service.depositar(1L, Double.parseDouble("100.0"));
 
         assertationsContaBancaria(resultado, 250.0);
     }
@@ -88,14 +88,9 @@ class ContaBancariaServiceImplTest {
         ContaBancaria contaBancariaAtualizada = contaBancariaAtualizadaComSaque();
         BDDMockito.when(repositoryMock.save(any())).thenReturn(contaBancariaAtualizada);
 
-        ContaBancariaResponse contaBancariaResponse = service.sacar(1L, valorSaque);
+        ContaBancariaDTO contaBancariaDTO = service.sacar(1L, valorSaque);
 
-        assertationsContaBancaria(contaBancariaResponse, 100.0);
-    }
-
-    private void assertationsContaBancaria(ContaBancariaResponse resultado, Double valorSaldo) {
-        assertThat(resultado).isNotNull();
-        assertThat(resultado.getSaldo()).isEqualTo(valorSaldo);
+        assertationsContaBancaria(contaBancariaDTO, 100.0);
     }
 
     @Test
@@ -129,10 +124,15 @@ class ContaBancariaServiceImplTest {
         BDDMockito.when(repositoryMock.saveAll(anyList()))
                 .thenReturn(asList(contaBancariaBeneficiarioAtualizada(), contaBancariaSolicitanteAtualizada()));
 
-        ContaBancariaResponse contaBancariaResponse = service.transferir(solicitacaoTransferencia);
+        ContaBancariaDTO contaBancariaDTO = service.transferir(solicitacaoTransferencia);
 
-        assertThat(contaBancariaResponse)
-                .extracting(ContaBancariaResponse::getSaldo)
+        assertThat(contaBancariaDTO)
+                .extracting(ContaBancariaDTO::getSaldo)
                 .isEqualTo(contaBancariaSolicitanteAtualizada().getSaldo());
+    }
+
+    private void assertationsContaBancaria(ContaBancariaDTO resultado, Double valorSaldo) {
+        assertThat(resultado).isNotNull();
+        assertThat(resultado.getSaldo()).isEqualTo(valorSaldo);
     }
 }

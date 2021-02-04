@@ -2,7 +2,7 @@ package br.com.michaelmartins.desafiobanco.dto;
 
 import br.com.michaelmartins.desafiobanco.domain.ContaBancaria;
 
-public class ContaBancariaResponse {
+public class ContaBancariaDTO {
 
     public static final String CONTA_CADASTRADA_COM_SUCESSO = "Conta cadastrada com sucesso!";
     public static final String DEPOSITO_REALIZADO_COM_SUCESSO = "Depósito realizado com sucesso!";
@@ -14,14 +14,14 @@ public class ContaBancariaResponse {
     private String message;
     private Double saldo;
 
-    public ContaBancariaResponse(Long id, String numeroConta, String valor, String message) {
+    public ContaBancariaDTO(Long id, String numeroConta, String valor, String message) {
         this.id = id;
         this.numeroConta = numeroConta;
         this.saldo = Double.parseDouble(valor);
         this.message = message;
     }
 
-    public ContaBancariaResponse(ContaBancaria entity) {
+    public ContaBancariaDTO(ContaBancaria entity) {
         this.id = entity.getId();
         this.numeroConta = entity.getNumeroConta();
         this.saldo = entity.getSaldo();
